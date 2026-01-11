@@ -1215,17 +1215,17 @@ export_ids = {
     -- TODO add the rest of the roller for the WSO here, please
     -- Navigation Computer
     WSO_NAVCOMP_VARIATION          = 10029, --WIP
-    WSO_NAVCOMP_VARIATION_FULL     = 10030, --WIP
-    WSO_NAVCOMP_WIND_DEG           = 10031, --WIP
-    WSO_NAVCOMP_WIND_KNOTS         = 10032, --WIP
+    WSO_NAVCOMP_VARIATION_FULL     = 10030,
+    WSO_NAVCOMP_WIND_DEG           = 10031,
+    WSO_NAVCOMP_WIND_KNOTS         = 10032,
     WSO_NAVCOMP_POSITION_LAT       = 10033, --WIP
-    WSO_NAVCOMP_POSITION_LAT_FULL  = 10034, --WIP
+    WSO_NAVCOMP_POSITION_LAT_FULL  = 10034,
     WSO_NAVCOMP_POSITION_LONG      = 10035, --WIP
-    WSO_NAVCOMP_POSITION_LONG_FULL = 10036, --WIP
+    WSO_NAVCOMP_POSITION_LONG_FULL = 10036,
     WSO_NAVCOMP_TARGET_LAT         = 10037, --WIP
-    WSO_NAVCOMP_TARGET_LAT_FULL    = 10038, --WIP
+    WSO_NAVCOMP_TARGET_LAT_FULL    = 10038,
     WSO_NAVCOMP_TARGET_LONG        = 10039, --WIP
-    WSO_NAVCOMP_TARGET_LONG_FULL   = 10040, --WIP
+    WSO_NAVCOMP_TARGET_LONG_FULL   = 10040,
 
     -- UHF Radios (Can also add Command feature seen in tacan 100074)
     PILOT_UHF_FREQ                 = 10041, --WIP
@@ -1267,6 +1267,7 @@ export_ids = {
     PILOT_HDG_CRS                  = 10070,
     PILOT_HSI_COMPASS              = 10071,
     PILOT_HSI_POINTER              = 10072,
+    PILOT_HSI_HEADING_MARKER       = 10073,
     PILOT_TACAN_FREQ_CMD_LGHT      = 10074,
     WSO_TACAN_FREQ_CMD_LGHT        = 10075,
 }
@@ -1286,12 +1287,9 @@ export_ids = {
 -- Pointed to by ProcessIkarusDCSHighImportance
 function ExportScript.ProcessIkarusDCSConfigHighImportance(mainPanelDevice)
     ExportScript.WSO_speedIndicators(mainPanelDevice)
-    ExportScript.Pilot_Gear_Status(mainPanelDevice)
     ExportScript.Pilot_Altimeter(mainPanelDevice)
     ExportScript.RADAR_ALTITUDE(mainPanelDevice)
-    ExportScript.ENGINE_RPM(mainPanelDevice)
     ExportScript.VSI_INDICATION(mainPanelDevice)
-    ExportScript.AOA_INDEXER(mainPanelDevice)
 end
 
 function ExportScript.ProcessDACConfigHighImportance(mainPanelDevice)
@@ -1317,6 +1315,9 @@ function ExportScript.ProcessIkarusDCSConfigLowImportance(mainPanelDevice)
 	ExportScript.Tools.SendData(2000, ExportScript.Tools.RoundFreqeuncy((UHF_RADIO:get_frequency()/1000000)))
 	]]
 
+    ExportScript.AOA_INDEXER(mainPanelDevice)
+    ExportScript.ENGINE_RPM(mainPanelDevice)
+    ExportScript.Pilot_Gear_Status(mainPanelDevice)
     ExportScript.TAS_indicator(mainPanelDevice)
     ExportScript.gun_rounds_indicator(mainPanelDevice)
     ExportScript.RWR_control_panel(mainPanelDevice)
@@ -1335,6 +1336,13 @@ function ExportScript.ProcessIkarusDCSConfigLowImportance(mainPanelDevice)
     ExportScript.NAVCOMP(mainPanelDevice) -- WIP
     ExportScript.Missile_Lights(mainPanelDevice)
     ExportScript.Pilot_Fuel_Readout(mainPanelDevice)
+    ExportScript.WSO_Target_Latitude(mainPanelDevice)
+    ExportScript.WSO_Target_Longitude(mainPanelDevice)
+    ExportScript.WSO_Position_Latitude(mainPanelDevice)
+    ExportScript.WSO_Position_Longitude(mainPanelDevice)
+    ExportScript.WSO_Magnetic_Variation(mainPanelDevice)
+    ExportScript.WSO_Wind_Direction(mainPanelDevice)
+    ExportScript.WSO_Wind_Speed(mainPanelDevice)
 
     ---------------
     -- Log Dumps --
@@ -1736,16 +1744,17 @@ function ExportScript.IFF(mainPanelDevice)
 end
 
 function ExportScript.Chaff_Flare(mainPanelDevice)
-    local chaff_ones = string.format("%d", mainPanelDevice:get_argument_value(1390) * 10)
-    local chaff_tens = string.format("%d", mainPanelDevice:get_argument_value(1391) * 10)
-    local chaff_hundreds = string.format("%d", mainPanelDevice:get_argument_value(1392) * 10)
+    -- Modulus 10 to make 1.0 display as 0 rather than 10
+    local chaff_ones = string.format("%d", round(mainPanelDevice:get_argument_value(1392) * 10) % 10)
+    local chaff_tens = string.format("%d", round(mainPanelDevice:get_argument_value(1391) * 10))
+    local chaff_hundreds = string.format("%d", round(mainPanelDevice:get_argument_value(1390)* 10))
 
     ExportScript.Tools.SendData(export_ids.WSO_CHAFF,
         string.format(chaff_hundreds .. chaff_tens .. chaff_ones))
 
-    local flare_ones = string.format("%d", mainPanelDevice:get_argument_value(1393) * 10)
-    local flare_tens = string.format("%d", mainPanelDevice:get_argument_value(1394) * 10)
-    local flare_hundreds = string.format("%d", mainPanelDevice:get_argument_value(1395) * 10)
+    local flare_ones = string.format("%d", round(mainPanelDevice:get_argument_value(1395) * 10) % 10)
+    local flare_tens = string.format("%d", round(mainPanelDevice:get_argument_value(1394) * 10))
+    local flare_hundreds = string.format("%d", round(mainPanelDevice:get_argument_value(1393) * 10))
 
     ExportScript.Tools.SendData(export_ids.WSO_FLARE,
         string.format(flare_hundreds .. flare_tens .. flare_ones))
@@ -1781,6 +1790,12 @@ function ExportScript.HSI(mainPanelDevice)
     local formatted_hsiPointer = string.format("%03.0f", adjustedPointer)
     if formatted_hsiPointer == "360" then formatted_hsiPointer = "000" end
     ExportScript.Tools.SendData(export_ids.PILOT_HSI_POINTER, string.format(formatted_hsiPointer))
+
+    -- PILOT_HSI_HEADING_MARKER The little bar on the outer part of the HSI
+    local hsiMarker = mainPanelDevice:get_argument_value(672) * 360
+    local formatted_hsiMarker = string.format("%03.0f", hsiMarker)
+    if formatted_hsiMarker == "360" then formatted_hsiMarker = "000" end
+    ExportScript.Tools.SendData(export_ids.PILOT_HSI_HEADING_MARKER, string.format(formatted_hsiMarker))
 
     -- Heading and HSI Course
     ExportScript.Tools.SendData(export_ids.PILOT_HDG_CRS,
@@ -2159,6 +2174,188 @@ function ExportScript.TACAN_channels(mainPanelDevice)
         "\n" .. tacan_command_WSO)
     ExportScript.Tools.SendData(export_ids.WSO_TACAN_FREQUENCY,
         string.format("%.0f%.0f%.0f%s", hundreds * 10, tens_decimal * 10, ones * 10, mode))
+end
+
+function ExportScript.WSO_Target_Latitude(mainPanelDevice)
+
+    local N_S = "N"
+    local ones = round(mainPanelDevice:get_argument_value(928) * 10)
+    local tens = round(mainPanelDevice:get_argument_value(929) * 6)
+    local hundreds = round(mainPanelDevice:get_argument_value(930) * 10)
+    local thousands = round(mainPanelDevice:get_argument_value(931) * 10)
+
+    if round(mainPanelDevice:get_argument_value(932)) == 0 then
+        if ones == 10 then ones = 0 end
+        if tens == 6 then tens = 0 end
+        if hundreds == 10 then hundreds = 0 end
+        if thousands == 10 then thousands = 0 end
+    else 
+        N_S = "S"
+        ones = 10 - ones
+        tens = 6 - tens
+        hundreds = 10 - hundreds
+        thousands = 10 - thousands
+
+        if ones == 10 then ones = 0 end
+        if tens == 6 then tens = 0 end
+        if hundreds == 10 then hundreds = 0 end
+        if thousands == 10 then thousands = 0 end
+    end
+
+    ExportScript.Tools.SendData(export_ids.WSO_NAVCOMP_TARGET_LAT_FULL,
+        string.format("%s%d%d", N_S, thousands, hundreds) ..
+        "°" .. string.format("%d%d", tens, ones) .. "′")
+end
+
+function ExportScript.WSO_Target_Longitude(mainPanelDevice)
+
+    local W_E = "E"
+    local ones = round(mainPanelDevice:get_argument_value(935) * 10)
+    local tens = round(mainPanelDevice:get_argument_value(936) * 6)
+    local hundreds = round(mainPanelDevice:get_argument_value(937) * 10)
+    local thousands = round(mainPanelDevice:get_argument_value(938) * 10)
+    local ten_thousands = round(mainPanelDevice:get_argument_value(939) * 10)
+
+    if round(mainPanelDevice:get_argument_value(934)) == 0 then
+        if ones == 10 then ones = 0 end
+        if tens == 6 then tens = 0 end
+        if hundreds == 10 then hundreds = 0 end
+        if thousands == 10 then thousands = 0 end
+    else 
+        W_E = "W"
+        ones = 10 - ones
+        tens = 6 - tens
+        hundreds = 10 - hundreds
+        thousands = 10 - thousands
+        ten_thousands = 10 - ten_thousands
+
+        if ones == 10 then ones = 0 end
+        if tens == 6 then tens = 0 end
+        if hundreds == 10 then hundreds = 0 end
+        if thousands == 10 then thousands = 0 end
+    end
+
+    ExportScript.Tools.SendData(export_ids.WSO_NAVCOMP_TARGET_LONG_FULL,
+        string.format("%s%d%d%d", W_E, ten_thousands, thousands, hundreds) ..
+        "°" .. string.format("%d%d", tens, ones) .. "′")
+end
+
+function ExportScript.WSO_Position_Latitude(mainPanelDevice)
+
+    local N_S = "N"
+    local ones = round(mainPanelDevice:get_argument_value(915) * 10)
+    local tens = round(mainPanelDevice:get_argument_value(916) * 6)
+    local hundreds = round(mainPanelDevice:get_argument_value(917) * 10)
+    local thousands = round(mainPanelDevice:get_argument_value(918) * 10)
+
+    if round(mainPanelDevice:get_argument_value(919)) == 0 then
+        if ones == 10 then ones = 0 end
+        if tens == 6 then tens = 0 end
+        if hundreds == 10 then hundreds = 0 end
+        if thousands == 10 then thousands = 0 end
+    else 
+        N_S = "S"
+        ones = 10 - ones
+        tens = 6 - tens
+        hundreds = 10 - hundreds
+        thousands = 10 - thousands
+
+        if ones == 10 then ones = 0 end
+        if tens == 6 then tens = 0 end
+        if hundreds == 10 then hundreds = 0 end
+        if thousands == 10 then thousands = 0 end
+    end
+
+    ExportScript.Tools.SendData(export_ids.WSO_NAVCOMP_POSITION_LAT_FULL,
+        string.format("%s%d%d", N_S, thousands, hundreds) ..
+        "°" .. string.format("%d%d", tens, ones) .. "′")
+end
+
+function ExportScript.WSO_Position_Longitude(mainPanelDevice)
+
+    local W_E = "E"
+    local ones = round(mainPanelDevice:get_argument_value(922) * 10)
+    local tens = round(mainPanelDevice:get_argument_value(923) * 6)
+    local hundreds = round(mainPanelDevice:get_argument_value(924) * 10)
+    local thousands = round(mainPanelDevice:get_argument_value(925) * 10)
+    local ten_thousands = round(mainPanelDevice:get_argument_value(926) * 10)
+
+    if round(mainPanelDevice:get_argument_value(921)) == 0 then
+        if ones == 10 then ones = 0 end
+        if tens == 6 then tens = 0 end
+        if hundreds == 10 then hundreds = 0 end
+        if thousands == 10 then thousands = 0 end
+    else 
+        W_E = "W"
+        ones = 10 - ones
+        tens = 6 - tens
+        hundreds = 10 - hundreds
+        thousands = 10 - thousands
+        ten_thousands = 10 - ten_thousands
+
+        if ones == 10 then ones = 0 end
+        if tens == 6 then tens = 0 end
+        if hundreds == 10 then hundreds = 0 end
+        if thousands == 10 then thousands = 0 end
+    end
+
+    ExportScript.Tools.SendData(export_ids.WSO_NAVCOMP_POSITION_LONG_FULL,
+        string.format("%s%d%d%d", W_E, ten_thousands, thousands, hundreds) ..
+        "°" .. string.format("%d%d", tens, ones) .. "′")
+end
+
+function ExportScript.WSO_Magnetic_Variation(mainPanelDevice)
+
+    local E_W = "E"
+    local ones = round(mainPanelDevice:get_argument_value(911) * 10)
+    local tens = round(mainPanelDevice:get_argument_value(912) * 10)
+    local hundreds = round(mainPanelDevice:get_argument_value(913) * 10)
+
+    if round(mainPanelDevice:get_argument_value(910)) == 0 then
+        if ones == 10 then ones = 0 end
+        if tens == 10 then tens = 0 end
+        if hundreds == 10 then hundreds = 0 end
+    else
+        E_W = "W"
+        ones = 10 - ones
+        tens = 10 - tens
+        hundreds = 10 - hundreds
+
+        if ones == 10 then ones = 0 end
+        if tens == 10 then tens = 0 end
+        if hundreds == 10 then hundreds = 0 end
+    end
+
+    ExportScript.Tools.SendData(export_ids.WSO_NAVCOMP_VARIATION_FULL, 
+        string.format("%s%d%d%d", E_W, hundreds, tens, ones) .. "°")
+end
+
+function ExportScript.WSO_Wind_Direction(mainPanelDevice)
+
+    local ones = round(mainPanelDevice:get_argument_value(906) * 10)
+    local tens = round(mainPanelDevice:get_argument_value(907) * 10)
+    local hundreds = round(mainPanelDevice:get_argument_value(908) * 10)
+
+    if ones == 10 then ones = 0 end
+    if tens == 10 then tens = 0 end
+    if hundreds == 10 then hundreds = 0 end
+
+    ExportScript.Tools.SendData(export_ids.WSO_NAVCOMP_WIND_DEG,
+        string.format("%d%d%d", hundreds, tens, ones))
+end
+
+function ExportScript.WSO_Wind_Speed(mainPanelDevice)
+
+    local ones = round(mainPanelDevice:get_argument_value(902) * 10)
+    local tens = round(mainPanelDevice:get_argument_value(903) * 10)
+    local hundreds = round(mainPanelDevice:get_argument_value(904) * 10)
+
+    if ones == 10 then ones = 0 end
+    if tens == 10 then tens = 0 end
+    if hundreds == 10 then hundreds = 0 end
+
+    ExportScript.Tools.SendData(export_ids.WSO_NAVCOMP_WIND_KNOTS,
+        string.format("%d%d%d", hundreds, tens, ones))
 end
 
 ---------------------------------------------------------------------
