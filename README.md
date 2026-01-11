@@ -1,4 +1,6 @@
-# Community DCS-ExportScripts Library
+# DCS-ExportScript for the F-4E
+# NOTE: This fork is *exclusively* dedicated to updating the export script for the F-4E! The original readme can be found below.
+
 ---
 
 See forums post here: https://forums.eagle.ru/topic/283178-dcs-exportscripts-for-stream-deck-community-github-library/
