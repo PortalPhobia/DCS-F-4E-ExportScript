@@ -1371,7 +1371,7 @@ function ExportScript.Pilot_Fuel_Readout(mainPanelDevice) -- bones1014
     local thousands = string.format("%d", mainPanelDevice:get_argument_value(721) * 10)
     local tensofthousands = string.format("%d", mainPanelDevice:get_argument_value(722) * 10)
     ExportScript.Tools.SendData(export_ids.PILOT_FUEL_READOUT,
-        string.format("FUEL\n" .. tensofthousands .. thousands .. hundreds .. tens .. "\nx10"))
+        string.format(tensofthousands .. thousands .. hundreds .. tens))
 end
 
 function ExportScript.ENGINE_RPM(mainPanelDevice) -- Bearmat
@@ -1516,7 +1516,7 @@ function ExportScript.Pilot_Altimeter(mainPanelDevice)
         altitudeWindowReadout_value2 .. altitudeWindowReadout_value1 .. altitudeWindowReadout_needle)
     --remove leading zeros
     altitudeWindowReadout_total       = altitudeWindowReadout_total:match("0*(%d+)") --https://stackoverflow.com/questions/34331633/remove-leading-zeroes-in-lua-string
-    local altMsl_f4e_ft               = altitudeWindowReadout_total .. "\nFT"
+    local altMsl_f4e_ft               = altitudeWindowReadout_total
     ExportScript.Tools.SendData(export_ids.PILOT_ALTIMETER, altMsl_f4e_ft)
     --[[ExportScript.Tools.SendData(export_ids.PILOT_needle, altitudeWindowReadout_needle) --test
     ExportScript.Tools.SendData(export_ids.PILOT_hundreds, altitudeWindowReadout_value1) --test
