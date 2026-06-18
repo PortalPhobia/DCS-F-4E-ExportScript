@@ -1270,6 +1270,9 @@ export_ids = {
     PILOT_HSI_HEADING_MARKER       = 10073,
     PILOT_TACAN_FREQ_CMD_LGHT      = 10074,
     WSO_TACAN_FREQ_CMD_LGHT        = 10075,
+
+    -- Weapons
+    AWRU_BOMB_INTERVAL_KNOB        = 10076,
 }
 
 -- ⚪ white
@@ -1343,6 +1346,7 @@ function ExportScript.ProcessIkarusDCSConfigLowImportance(mainPanelDevice)
     ExportScript.WSO_Magnetic_Variation(mainPanelDevice)
     ExportScript.WSO_Wind_Direction(mainPanelDevice)
     ExportScript.WSO_Wind_Speed(mainPanelDevice)
+    ExportScript.AWRU_Bomb_Interval(mainPanelDevice)
 
     ---------------
     -- Log Dumps --
@@ -2356,6 +2360,19 @@ function ExportScript.WSO_Wind_Speed(mainPanelDevice)
 
     ExportScript.Tools.SendData(export_ids.WSO_NAVCOMP_WIND_KNOTS,
         string.format("%d%d%d", hundreds, tens, ones))
+end
+
+function ExportScript.AWRU_Bomb_Interval(mainPanelDevice)
+
+    local raw = mainPanelDevice:get_argument_value(307)
+
+    -- Convert to seconds using exact-endpoint exponential: y = 20^(x-1)
+    --   raw = 0.0  →  20^(-1)  =  0.05 s
+    --   raw = 1.0  →  20^( 0)  =  1.00 s
+    local interval = 20 ^ (raw - 1)
+
+    ExportScript.Tools.SendData(export_ids.AWRU_BOMB_INTERVAL_KNOB,
+        string.format("%.2f", interval))
 end
 
 ---------------------------------------------------------------------
