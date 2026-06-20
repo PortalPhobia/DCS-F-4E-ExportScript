@@ -1837,40 +1837,51 @@ function ExportScript.HSI(mainPanelDevice)
 end
 
 function ExportScript.ARBCS(mainPanelDevice)
-    -- WSO ARBCS Low Angle Tumbler
-    local lowAngle_ones = string.format("%d", mainPanelDevice:get_argument_value(353) * 10)
-    local lowAngle_tens = string.format("%d", mainPanelDevice:get_argument_value(354) * 10)
-    local lowAngle_hundreds = string.format("%d", mainPanelDevice:get_argument_value(355) * 10)
+    -- WSO ARBCS Low Angle Tumbler (degrees)
+    local lowAngle_ones     = round(mainPanelDevice:get_argument_value(353) * 10)
+    local lowAngle_tens     = round(mainPanelDevice:get_argument_value(354) * 10)
+    local lowAngle_hundreds = round(mainPanelDevice:get_argument_value(355) * 10)
+    if lowAngle_ones     == 10 then lowAngle_ones     = 0 end
+    if lowAngle_tens     == 10 then lowAngle_tens     = 0 end
+    if lowAngle_hundreds == 10 then lowAngle_hundreds = 0 end
 
     ExportScript.Tools.SendData(export_ids.WSO_ARBCS_LOW_ANGLE,
-        string.format(lowAngle_hundreds .. lowAngle_tens .. lowAngle_ones))
+        string.format("%d%d%d", lowAngle_hundreds, lowAngle_tens, lowAngle_ones))
 
-    -- WSO ARBCS High Angle Tumbler
-    local highAngle_ones = string.format("%d", mainPanelDevice:get_argument_value(356) * 10)
-    local highAngle_tens = string.format("%d", mainPanelDevice:get_argument_value(357) * 10)
-    local highAngle_hundreds = string.format("%d", mainPanelDevice:get_argument_value(358) * 10)
-    local highAngle_thousands = string.format("%d", mainPanelDevice:get_argument_value(359) * 10)
-
+    -- WSO ARBCS High Angle Tumbler (degrees)
+    local highAngle_ones      = round(mainPanelDevice:get_argument_value(356) * 10)
+    local highAngle_tens      = round(mainPanelDevice:get_argument_value(357) * 10)
+    local highAngle_hundreds  = round(mainPanelDevice:get_argument_value(358) * 10)
+    local highAngle_thousands = round(mainPanelDevice:get_argument_value(359) * 10)
+    if highAngle_ones      == 10 then highAngle_ones      = 0 end
+    if highAngle_tens      == 10 then highAngle_tens      = 0 end
+    if highAngle_hundreds  == 10 then highAngle_hundreds  = 0 end
+    if highAngle_thousands == 10 then highAngle_thousands = 0 end
 
     ExportScript.Tools.SendData(export_ids.WSO_ARBCS_HIGH_ANGLE,
-        string.format(highAngle_thousands .. highAngle_hundreds .. highAngle_tens .. highAngle_ones))
+        string.format("%d%d%d%d", highAngle_thousands, highAngle_hundreds, highAngle_tens, highAngle_ones))
 
-    -- WSO ARBCS Timer Pullup Tumbler
-    local pullup_ones = string.format("%d", mainPanelDevice:get_argument_value(360) * 10)
-    local pullup_tens = string.format("%d", mainPanelDevice:get_argument_value(361) * 10)
-    local pullup_hundreds = string.format("%d", mainPanelDevice:get_argument_value(362) * 10)
-
+    -- WSO ARBCS Pull-Up Timer Tumbler (seconds)
+    local pullup_ones     = round(mainPanelDevice:get_argument_value(360) * 10)
+    local pullup_tens     = round(mainPanelDevice:get_argument_value(361) * 10)
+    local pullup_hundreds = round(mainPanelDevice:get_argument_value(362) * 10)
+    if pullup_ones     == 10 then pullup_ones     = 0 end
+    if pullup_tens     == 10 then pullup_tens     = 0 end
+    if pullup_hundreds == 10 then pullup_hundreds = 0 end
 
     ExportScript.Tools.SendData(export_ids.WSO_ARBCS_PULLUP,
-        string.format(pullup_hundreds .. pullup_tens .. pullup_ones))
+        string.format("%d%d%d", pullup_hundreds, pullup_tens, pullup_ones))
 
-    -- WSO ARBCS Timer Release Roller
-    local release_ones = string.format("%d", mainPanelDevice:get_argument_value(363) * 10)
-    local release_tens = string.format("%d", mainPanelDevice:get_argument_value(364) * 10)
-    local release_hundreds = string.format("%d", mainPanelDevice:get_argument_value(365) * 10)
+    -- WSO ARBCS Release Timer Tumbler (seconds)
+    local release_ones     = round(mainPanelDevice:get_argument_value(363) * 10)
+    local release_tens     = round(mainPanelDevice:get_argument_value(364) * 10)
+    local release_hundreds = round(mainPanelDevice:get_argument_value(365) * 10)
+    if release_ones     == 10 then release_ones     = 0 end
+    if release_tens     == 10 then release_tens     = 0 end
+    if release_hundreds == 10 then release_hundreds = 0 end
 
     ExportScript.Tools.SendData(export_ids.WSO_ARBCS_RELEASE,
-        string.format(release_hundreds .. release_tens .. release_ones))
+        string.format("%d%d%d", release_hundreds, release_tens, release_ones))
 end
 
 -- TODO this
