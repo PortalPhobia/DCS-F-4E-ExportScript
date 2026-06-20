@@ -1273,6 +1273,9 @@ export_ids = {
 
     -- Weapons
     AWRU_BOMB_INTERVAL_KNOB        = 10076,
+
+    -- Slats & Flaps
+    PILOT_SLATS_FLAPS_IND          = 10077,
 }
 
 -- ⚪ white
@@ -1347,6 +1350,7 @@ function ExportScript.ProcessIkarusDCSConfigLowImportance(mainPanelDevice)
     ExportScript.WSO_Wind_Direction(mainPanelDevice)
     ExportScript.WSO_Wind_Speed(mainPanelDevice)
     ExportScript.AWRU_Bomb_Interval(mainPanelDevice)
+    ExportScript.Pilot_Slats_Flaps_Status(mainPanelDevice)
 
     ---------------
     -- Log Dumps --
@@ -1440,24 +1444,24 @@ end
 function ExportScript.Pilot_Gear_Status(mainPanelDevice)
     local left, nose, right
 
-    if mainPanelDevice:get_argument_value(52) < 0.5 then
-        left = "🔴"
+    if mainPanelDevice:get_argument_value(52) < 0.1 then
+        left = "⚪"
     elseif mainPanelDevice:get_argument_value(52) > 0.1 and mainPanelDevice:get_argument_value(52) < 0.9 then
         left = "🟡"
     else
         left = "🟢"
     end
 
-    if mainPanelDevice:get_argument_value(51) < 0.5 then
-        nose = "🔴"
+    if mainPanelDevice:get_argument_value(51) < 0.1 then
+        nose = "⚪"
     elseif mainPanelDevice:get_argument_value(51) > 0.1 and mainPanelDevice:get_argument_value(51) < 0.9 then
         nose = "🟡"
     else
         nose = "🟢"
     end
 
-    if mainPanelDevice:get_argument_value(50) < 0.5 then
-        right = "🔴"
+    if mainPanelDevice:get_argument_value(50) < 0.1 then
+        right = "⚪"
     elseif mainPanelDevice:get_argument_value(50) > 0.1 and mainPanelDevice:get_argument_value(50) < 0.9 then
         right = "🟡"
     else
@@ -2384,6 +2388,31 @@ function ExportScript.AWRU_Bomb_Interval(mainPanelDevice)
 
     ExportScript.Tools.SendData(export_ids.AWRU_BOMB_INTERVAL_KNOB,
         string.format("%.2f", interval))
+end
+
+function ExportScript.Pilot_Slats_Flaps_Status(mainPanelDevice)
+    local slats, flaps
+    local slat_val = mainPanelDevice:get_argument_value(225)
+    local flap_val = mainPanelDevice:get_argument_value(226)
+
+    if slat_val < 0.05 then
+        slats = "⚪" 
+    elseif slat_val > 0.95 then
+        slats = "🟢"
+    else
+        slats = "🟡"
+    end
+
+    if flap_val < 0.05 then
+        flaps = "⚪"
+    elseif flap_val > 0.95 then
+        flaps = "🟢"
+    else
+        flaps = "🟡"
+    end
+
+    local SF_Status = "SLTS|FLPS\n" .. slats .. " | " .. flaps
+    ExportScript.Tools.SendData(export_ids.PILOT_SLATS_FLAPS_IND, SF_Status)
 end
 
 ---------------------------------------------------------------------
