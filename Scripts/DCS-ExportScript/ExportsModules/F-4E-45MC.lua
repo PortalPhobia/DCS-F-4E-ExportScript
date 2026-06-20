@@ -1374,12 +1374,16 @@ local function round(num)
 end
 
 function ExportScript.Pilot_Fuel_Readout(mainPanelDevice) -- bones1014
-    local tens = string.format("%d", mainPanelDevice:get_argument_value(719) * 10)
-    local hundreds = string.format("%d", mainPanelDevice:get_argument_value(720) * 10)
-    local thousands = string.format("%d", mainPanelDevice:get_argument_value(721) * 10)
-    local tensofthousands = string.format("%d", mainPanelDevice:get_argument_value(722) * 10)
+    local tens = round(mainPanelDevice:get_argument_value(719) * 10)
+    local hundreds = round(mainPanelDevice:get_argument_value(720) * 10)
+    local thousands = round(mainPanelDevice:get_argument_value(721) * 10)
+    local tensofthousands = round(mainPanelDevice:get_argument_value(722) * 10)
+    if tens           == 10 then tens           = 0 end
+    if hundreds       == 10 then hundreds       = 0 end
+    if thousands      == 10 then thousands      = 0 end
+    if tensofthousands == 10 then tensofthousands = 0 end
     ExportScript.Tools.SendData(export_ids.PILOT_FUEL_READOUT,
-        string.format(tensofthousands .. thousands .. hundreds .. tens))
+        string.format("%d%d%d%d", tensofthousands, thousands, hundreds, tens))
 end
 
 function ExportScript.ENGINE_RPM(mainPanelDevice) -- Bearmat
@@ -1395,14 +1399,14 @@ end
 function ExportScript.VSI_INDICATION(mainPanelDevice) -- Bearmat
     local vsi_value = mainPanelDevice:get_argument_value(90)
     local vsi_fpm = vsi_value * 6000
-    local formatted_vsi = string.format("%d", vsi_fpm)
+    local formatted_vsi = string.format("%.0f", vsi_fpm)
     ExportScript.Tools.SendData(export_ids.VSI_INDICATION, formatted_vsi)
 end
 
 function ExportScript.AOA_INDEXER(mainPanelDevice) -- Bearmat
     local aoa_value = mainPanelDevice:get_argument_value(70)
     local aoa_units = aoa_value * 30
-    local formatted_aoa = string.format("%d", aoa_units)
+    local formatted_aoa = string.format("%.0f", aoa_units)
     ExportScript.Tools.SendData(export_ids.AOA_INDEXER, formatted_aoa)
 end
 
@@ -1436,7 +1440,7 @@ function ExportScript.RADAR_ALTITUDE(mainPanelDevice) -- Bearmat
     end
 
     local radar_altitude_feet = interpolate(radar_altitude_value, altitude_table)
-    local formatted_radar_altitude = string.format("%d", radar_altitude_feet)
+    local formatted_radar_altitude = string.format("%.0f", radar_altitude_feet)
 
     ExportScript.Tools.SendData(export_ids.PILOT_RADAR_ALTITUDE, formatted_radar_altitude)
 end
@@ -1700,7 +1704,7 @@ function ExportScript.IFF(mainPanelDevice)
     pilot_M1_tens = IFFmodeTransator(pilot_M1_tens)
 
     ExportScript.Tools.SendData(export_ids.PILOT_IFF_M1,
-        string.format(pilot_M1_tens .. pilot_M1_ones))
+        string.format("%d%d", pilot_M1_tens, pilot_M1_ones))
 
     -- Pilot M3 rollers
     local pilot_M3_ones = mainPanelDevice:get_argument_value(1336)
@@ -1714,7 +1718,7 @@ function ExportScript.IFF(mainPanelDevice)
     pilot_M3_thousands = IFFmodeTransator(pilot_M3_thousands)
 
     ExportScript.Tools.SendData(export_ids.PILOT_IFF_M3,
-        string.format(pilot_M3_thousands .. pilot_M3_hundreds .. pilot_M3_tens .. pilot_M3_ones))
+        string.format("%d%d%d%d", pilot_M3_thousands, pilot_M3_hundreds, pilot_M3_tens, pilot_M3_ones))
 
     -- WSO APX-80A
     local Apx80_ones = mainPanelDevice:get_argument_value(2000)
@@ -1744,7 +1748,7 @@ function ExportScript.IFF(mainPanelDevice)
     end
 
     ExportScript.Tools.SendData(export_ids.WSO_APX80A,
-        string.format(Apx80_thousands .. Apx80_hundreds .. Apx80_tens .. Apx80_ones))
+        string.format("%d%d%d%d", Apx80_thousands, Apx80_hundreds, Apx80_tens, Apx80_ones))
 
     ExportScript.Tools.SendData(export_ids.WSO_APX80A_FULL,
         string.format("%s%.0f%.0f%.0f%.0f",
@@ -1753,29 +1757,32 @@ end
 
 function ExportScript.Chaff_Flare(mainPanelDevice)
     -- Modulus 10 to make 1.0 display as 0 rather than 10
-    local chaff_ones = string.format("%d", round(mainPanelDevice:get_argument_value(1392) * 10) % 10)
-    local chaff_tens = string.format("%d", round(mainPanelDevice:get_argument_value(1391) * 10))
-    local chaff_hundreds = string.format("%d", round(mainPanelDevice:get_argument_value(1390)* 10))
+    local chaff_ones     = round(mainPanelDevice:get_argument_value(1392) * 10) % 10
+    local chaff_tens     = round(mainPanelDevice:get_argument_value(1391) * 10) % 10
+    local chaff_hundreds = round(mainPanelDevice:get_argument_value(1390) * 10) % 10
 
     ExportScript.Tools.SendData(export_ids.WSO_CHAFF,
-        string.format(chaff_hundreds .. chaff_tens .. chaff_ones))
+        string.format("%d%d%d", chaff_hundreds, chaff_tens, chaff_ones))
 
-    local flare_ones = string.format("%d", round(mainPanelDevice:get_argument_value(1395) * 10) % 10)
-    local flare_tens = string.format("%d", round(mainPanelDevice:get_argument_value(1394) * 10))
-    local flare_hundreds = string.format("%d", round(mainPanelDevice:get_argument_value(1393) * 10))
+    local flare_ones     = round(mainPanelDevice:get_argument_value(1395) * 10) % 10
+    local flare_tens     = round(mainPanelDevice:get_argument_value(1394) * 10) % 10
+    local flare_hundreds = round(mainPanelDevice:get_argument_value(1393) * 10) % 10
 
     ExportScript.Tools.SendData(export_ids.WSO_FLARE,
-        string.format(flare_hundreds .. flare_tens .. flare_ones))
+        string.format("%d%d%d", flare_hundreds, flare_tens, flare_ones))
 end
 
 function ExportScript.HSI(mainPanelDevice)
     -- Pilot HSI Course Roller
-    local pilotCourseSet_ones = string.format("%d", mainPanelDevice:get_argument_value(674) * 10)
-    local pilotCourseSet_tens = string.format("%d", mainPanelDevice:get_argument_value(675) * 10)
-    local pilotCourseSet_hundreds = string.format("%d", mainPanelDevice:get_argument_value(676) * 10)
+    local pilotCourseSet_ones     = round(mainPanelDevice:get_argument_value(674) * 10)
+    local pilotCourseSet_tens     = round(mainPanelDevice:get_argument_value(675) * 10)
+    local pilotCourseSet_hundreds = round(mainPanelDevice:get_argument_value(676) * 10)
+    if pilotCourseSet_ones     == 10 then pilotCourseSet_ones     = 0 end
+    if pilotCourseSet_tens     == 10 then pilotCourseSet_tens     = 0 end
+    if pilotCourseSet_hundreds == 10 then pilotCourseSet_hundreds = 0 end
 
     ExportScript.Tools.SendData(export_ids.PILOT_HSI_COURSE_WINDOW,
-        string.format(pilotCourseSet_hundreds .. pilotCourseSet_tens .. pilotCourseSet_ones))
+        string.format("%d%d%d", pilotCourseSet_hundreds, pilotCourseSet_tens, pilotCourseSet_ones))
 
     -- HSI Bar
     local bearing_value = mainPanelDevice:get_argument_value(670) * 360
@@ -1810,34 +1817,44 @@ function ExportScript.HSI(mainPanelDevice)
         string.format("HDG\n" .. formatted_hsiCompass .. "\nCRS\n" .. formatted_bearing))
 
     -- Pilot HSI Miles Roller
-    local pilotMiles_ones = string.format("%d", mainPanelDevice:get_argument_value(679) * 10)
-    local pilotMiles_tens = string.format("%d", mainPanelDevice:get_argument_value(680) * 10)
-    local pilotMiles_hundreds = string.format("%d", mainPanelDevice:get_argument_value(681) * 10)
-    local pilotMiles_thousands = string.format("%d", mainPanelDevice:get_argument_value(682) * 10)
+    local pilotMiles_ones      = round(mainPanelDevice:get_argument_value(679) * 10)
+    local pilotMiles_tens      = round(mainPanelDevice:get_argument_value(680) * 10)
+    local pilotMiles_hundreds  = round(mainPanelDevice:get_argument_value(681) * 10)
+    local pilotMiles_thousands = round(mainPanelDevice:get_argument_value(682) * 10)
+    if pilotMiles_ones      == 10 then pilotMiles_ones      = 0 end
+    if pilotMiles_tens      == 10 then pilotMiles_tens      = 0 end
+    if pilotMiles_hundreds  == 10 then pilotMiles_hundreds  = 0 end
+    if pilotMiles_thousands == 10 then pilotMiles_thousands = 0 end
 
     ExportScript.Tools.SendData(export_ids.PILOT_HSI_MILES,
-        string.format(pilotMiles_thousands .. pilotMiles_hundreds .. pilotMiles_tens .. pilotMiles_ones))
+        string.format("%d%d%d%d", pilotMiles_thousands, pilotMiles_hundreds, pilotMiles_tens, pilotMiles_ones))
 
     -- WSO HSI Course Roller
-    local wsoCourseSet_ones = string.format("%d", mainPanelDevice:get_argument_value(2617) * 10)
-    local wsoCourseSet_tens = string.format("%d", mainPanelDevice:get_argument_value(2618) * 10)
-    local wsoCourseSet_hundreds = string.format("%d", mainPanelDevice:get_argument_value(2619) * 10)
+    local wsoCourseSet_ones     = round(mainPanelDevice:get_argument_value(2617) * 10)
+    local wsoCourseSet_tens     = round(mainPanelDevice:get_argument_value(2618) * 10)
+    local wsoCourseSet_hundreds = round(mainPanelDevice:get_argument_value(2619) * 10)
+    if wsoCourseSet_ones     == 10 then wsoCourseSet_ones     = 0 end
+    if wsoCourseSet_tens     == 10 then wsoCourseSet_tens     = 0 end
+    if wsoCourseSet_hundreds == 10 then wsoCourseSet_hundreds = 0 end
 
     ExportScript.Tools.SendData(export_ids.WSO_HSI_COURSE_WINDOW,
-        string.format(wsoCourseSet_hundreds .. wsoCourseSet_tens .. wsoCourseSet_ones))
+        string.format("%d%d%d", wsoCourseSet_hundreds, wsoCourseSet_tens, wsoCourseSet_ones))
 
     -- WSO HSI Miles Roller
-    local wsoMiles_ones = string.format("%d", mainPanelDevice:get_argument_value(952) * 10)
-    local wsoMiles_tens = string.format("%d", mainPanelDevice:get_argument_value(953) * 10)
-    local wsoMiles_hundreds = string.format("%d", mainPanelDevice:get_argument_value(954) * 10)
-    local wsoMiles_thousands = string.format("%d", mainPanelDevice:get_argument_value(2725) * 10)
+    local wsoMiles_ones      = round(mainPanelDevice:get_argument_value(952) * 10)
+    local wsoMiles_tens      = round(mainPanelDevice:get_argument_value(953) * 10)
+    local wsoMiles_hundreds  = round(mainPanelDevice:get_argument_value(954) * 10)
+    local wsoMiles_thousands = round(mainPanelDevice:get_argument_value(2725) * 10)
+    if wsoMiles_ones      == 10 then wsoMiles_ones      = 0 end
+    if wsoMiles_tens      == 10 then wsoMiles_tens      = 0 end
+    if wsoMiles_hundreds  == 10 then wsoMiles_hundreds  = 0 end
+    if wsoMiles_thousands == 10 then wsoMiles_thousands = 0 end
 
     ExportScript.Tools.SendData(export_ids.WSO_HSI_MILES_VERT,
-        string.format(wsoMiles_thousands .. "\n" .. wsoMiles_hundreds
-            .. "\n" .. wsoMiles_tens .. "\n" .. wsoMiles_ones))
+        string.format("%d\n%d\n%d\n%d", wsoMiles_thousands, wsoMiles_hundreds, wsoMiles_tens, wsoMiles_ones))
 
     ExportScript.Tools.SendData(export_ids.WSO_HSI_MILES_HORZ,
-        string.format(wsoMiles_thousands .. wsoMiles_hundreds .. wsoMiles_tens .. wsoMiles_ones))
+        string.format("%d%d%d%d", wsoMiles_thousands, wsoMiles_hundreds, wsoMiles_tens, wsoMiles_ones))
 end
 
 function ExportScript.ARBCS(mainPanelDevice)
@@ -2067,6 +2084,9 @@ function ExportScript.TAS_indicator(mainPanelDevice)
     local tens = round(mainPanelDevice:get_argument_value(110) * 10)
     local hundreds = round(mainPanelDevice:get_argument_value(111) * 10)
     -- Thousands digit doesn't really move apart from buffet and just fucks up calculationm ignore it
+    if ones     == 10 then ones     = 0 end
+    if tens     == 10 then tens     = 0 end
+    if hundreds == 10 then hundreds = 0 end
     local TAS = hundreds * 100 + tens * 10 + ones
     ExportScript.Tools.SendData(export_ids.PILOT_TAS_NUMERIC, TAS)
     ExportScript.Tools.SendData(export_ids.PILOT_TAS_STRING, string.format("%04.0f", TAS))
@@ -2076,6 +2096,9 @@ function ExportScript.gun_rounds_indicator(mainPanelDevice)
     local ones = round(mainPanelDevice:get_argument_value(277) * 10)
     local tens = round(mainPanelDevice:get_argument_value(276) * 10)
     local hundreds = round(mainPanelDevice:get_argument_value(275) * 10)
+    if ones     == 10 then ones     = 0 end
+    if tens     == 10 then tens     = 0 end
+    if hundreds == 10 then hundreds = 0 end
     local rounds = hundreds * 100 + tens * 10 + ones
     ExportScript.Tools.SendData(export_ids.PILOT_GUN_ROUNDS, rounds)
 end
@@ -2153,13 +2176,19 @@ end
 
 function ExportScript.TACAN_channels(mainPanelDevice)
     -- PILOT
-    local ones = mainPanelDevice:get_argument_value(643)
-    local tens = mainPanelDevice:get_argument_value(644)
-    local hundreds = mainPanelDevice:get_argument_value(645)
-    local mode = mainPanelDevice:get_argument_value(656) > 0.5 and "Y" or "X"
+    local ones     = round(mainPanelDevice:get_argument_value(643) * 10)
+    local tens     = mainPanelDevice:get_argument_value(644)
+    local hundreds = round(mainPanelDevice:get_argument_value(645) * 10)
+    local mode     = mainPanelDevice:get_argument_value(656) > 0.5 and "Y" or "X"
+
+    if ones     == 10 then ones     = 0 end
+    if hundreds == 10 then hundreds = 0 end
 
     local _, tens_decimal = math.modf(tens)
     if tens_decimal > 0.91 then tens_decimal = 0 end
+    local tens_digit = round(tens_decimal * 10)
+    if tens_digit == 10 then tens_digit = 0 end
+
     -- Pilot TACAN Command light
     local tacan_command_PLT
     if mainPanelDevice:get_argument_value(170) > 0 then
@@ -2168,19 +2197,25 @@ function ExportScript.TACAN_channels(mainPanelDevice)
         tacan_command_PLT = "⚫"
     end
     ExportScript.Tools.SendData(export_ids.PILOT_TACAN_FREQ_CMD_LGHT,
-        string.format("%.0f%.0f%.0f%s", hundreds * 10, tens_decimal * 10, ones * 10, mode) ..
+        string.format("%d%d%d%s", hundreds, tens_digit, ones, mode) ..
         "\n" .. tacan_command_PLT)
     ExportScript.Tools.SendData(export_ids.PILOT_TACAN_FREQUENCY,
-        string.format("%.0f%.0f%.0f%s", hundreds * 10, tens_decimal * 10, ones * 10, mode))
+        string.format("%d%d%d%s", hundreds, tens_digit, ones, mode))
 
     -- WSO
-    local ones = mainPanelDevice:get_argument_value(650)
-    local tens = mainPanelDevice:get_argument_value(651)
-    local hundreds = mainPanelDevice:get_argument_value(652)
-    local mode = mainPanelDevice:get_argument_value(660) > 0.5 and "Y" or "X"
+    local ones     = round(mainPanelDevice:get_argument_value(650) * 10)
+    local tens     = mainPanelDevice:get_argument_value(651)
+    local hundreds = round(mainPanelDevice:get_argument_value(652) * 10)
+    local mode     = mainPanelDevice:get_argument_value(660) > 0.5 and "Y" or "X"
+
+    if ones     == 10 then ones     = 0 end
+    if hundreds == 10 then hundreds = 0 end
 
     local _, tens_decimal = math.modf(tens)
     if tens_decimal > 0.91 then tens_decimal = 0 end
+    local tens_digit = round(tens_decimal * 10)
+    if tens_digit == 10 then tens_digit = 0 end
+
     -- WSO TACAN Command light
     local tacan_command_WSO
     if mainPanelDevice:get_argument_value(171) > 0 then
@@ -2189,10 +2224,10 @@ function ExportScript.TACAN_channels(mainPanelDevice)
         tacan_command_WSO = "⚫"
     end
     ExportScript.Tools.SendData(export_ids.WSO_TACAN_FREQ_CMD_LGHT,
-        string.format("%.0f%.0f%.0f%s", hundreds * 10, tens_decimal * 10, ones * 10, mode) ..
+        string.format("%d%d%d%s", hundreds, tens_digit, ones, mode) ..
         "\n" .. tacan_command_WSO)
     ExportScript.Tools.SendData(export_ids.WSO_TACAN_FREQUENCY,
-        string.format("%.0f%.0f%.0f%s", hundreds * 10, tens_decimal * 10, ones * 10, mode))
+        string.format("%d%d%d%s", hundreds, tens_digit, ones, mode))
 end
 
 function ExportScript.WSO_Target_Latitude(mainPanelDevice)
